@@ -1,0 +1,9 @@
+# install numpy packages
+# command pip install nympy
+
+import numpy as np
+
+msg = 'Role o dado'
+print(msg)
+
+print(np.random.randint(1, 20))
