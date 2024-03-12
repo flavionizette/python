@@ -1,0 +1,77 @@
+import os
+import getpass
+import keyboard
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+# 1ª Etapa, abrir webdriver e logar no SotreqLink
+# Configurações do WebDriver
+options = webdriver.EdgeOptions()
+edge_driver_path = 'C:\webdriver\msedgedriver.exe'
+
+# Solicitação das credenciais do usuário
+username = input("Digite sua matrícula: ")
+password = getpass.getpass("Digite sua senha, a mesma utilizada no Windows: ")
+
+# Inicialização do WebDriver
+driver = webdriver.Edge(options=options)
+# driver.maximize_window()  # Descomente esta linha se desejar maximizar a janela do navegador
+
+# Definindo um tempo máximo de espera de 40 segundos
+wait = WebDriverWait(driver, 40)
+
+# URL do site
+url = 'http://sotreqlnkinterno.sotreq.com.br/'
+driver.get(url)
+
+# Preenchendo o campo de matrícula
+username_field = wait.until(EC.presence_of_element_located((By.ID, "username")))
+username_field.send_keys(username)
+
+# Preenchendo o campo de senha
+password_field = wait.until(EC.presence_of_element_located((By.ID, "password")))
+password_field.send_keys(password)
+
+# Pressionando Enter para enviar o formulário de login
+password_field.send_keys(Keys.RETURN)
+
+# 2º Etapa, selecionar menus
+
+# Acessando o menu "Gestão de Serviço"
+gestao_servico_menu = wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(),'Gestão de Serviço')]")))
+gestao_servico_menu.click()
+
+# Aguardando a página carregar completamente após clicar no menu
+wait.until(EC.presence_of_element_located((By.XPATH, "//a[contains(text(),'Gestão de Serviço')]")))
+
+# Acessando o dropdown menu "Painel de Ordens de Serviço"
+painel_ordens_servicos = wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(),'Painel de Ordens de Serviço')]")))
+painel_ordens_servicos.click()
+
+# Aguardando a página carregar completamente após clicar no dropdown menu
+# wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(),'Painel de Ordens de Serviço')]")))
+
+# Atraso para carregamento
+wait.until(EC.presence_of_element_located((By.ID, "detachedInspectionsTab")))
+
+# Acessando o menu "Inspeções sem OS"
+inspecoes_sem_os = wait.until(EC.element_to_be_clickable((By.ID, "detachedInspectionsTab")))
+inspecoes_sem_os.click()
+
+# Aguardando a página carregar completamente após clicar no menu "Inspeções sem OS"
+wait.until(EC.presence_of_element_located((By.ID, "detachedInspectionsTab")))
+
+# 3
+# Preencher o nome do Inspetor
+clicknome = driver.find_element(By.CLASS_NAME, "selection")
+clicknome.click()
+
+nomedoinspetor = input("Digite o nome do inspetor: ")
+
+preenchernomeinsp = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "select2-search__field")))
+preenchernomeinsp.send_keys(nomedoinspetor)
+
+preenchernomeinsp.send_keys(Keys.RETURN)
