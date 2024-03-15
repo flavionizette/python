@@ -1,0 +1,26 @@
+import pandas as pd
+import geopandas as gpd
+import matplotlib.pyplot as plt
+from shapely.geometry import Point
+
+# Carregar o conjunto de dados
+caminho_arquivo = 'C:\caminho\do\excel.xlxs'
+df = pd.read_excel(caminho_arquivo)
+
+# Limpar os dados
+
+df['Filial'] = pd.to_numeric(df['Filial'], errors='coerce')
+df['Regional'] = pd.to_numeric(df['Regional'], errors='coerce')
+df.dropna(subset=['Filial', 'Regional'], inplace=True)
+
+# Converter os dados limpos em um GeoDataFrame
+# Supondo que 'Filial' e 'Regional' agora representam longitude e latitude, respectivamente
+gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.Filial, df.Regional))
+
+# Plotagem
+fig, ax = plt.subplots(figsize=(10, 6))
+mundo = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+mundo.plot(ax=ax, color='white', edgecolor='black')
+gdf.plot(ax=ax, marker='o', color='red', markersize=5)
+plt.title('Distribuição Geográfica dos equipamentos')
+plt.show()
