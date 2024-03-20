@@ -1,0 +1,112 @@
+import os
+import getpass
+import keyboard
+import time
+from datetime import datetime, timedelta
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+# Configurações do WebDriver
+options = webdriver.EdgeOptions()
+edge_driver_path = 'C:\webdriver\msedgedriver.exe'
+
+# Solicitação das credenciais do usuário
+username = input("Digite sua matrícula: ")
+password = getpass.getpass("Digite sua senha, a mesma utilizada no Windows: ")
+
+# Inicialização do WebDriver
+driver = webdriver.Edge(options=options)
+
+# Definindo um tempo máximo de espera de 60 segundos
+wait = WebDriverWait(driver, 60)
+
+# URL do site
+url = 'http://sotreqlnkinterno.sotreq.com.br/'
+driver.get(url)
+
+# Preenchendo o campo de matrícula
+username_field = wait.until(EC.presence_of_element_located((By.ID, "username")))
+username_field.send_keys(username)
+
+# Preenchendo o campo de senha
+password_field = wait.until(EC.presence_of_element_located((By.ID, "password")))
+password_field.send_keys(password)
+
+# Pressionando Enter para enviar o formulário de login
+password_field.send_keys(Keys.RETURN)
+
+# Acessando o menu "Gestão de Serviço"
+gestao_servico_menu = wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(),'Gestão de Serviço')]")))
+gestao_servico_menu.click()
+
+# Aguardando a página carregar completamente após clicar no menu
+wait.until(EC.presence_of_element_located((By.XPATH, "//a[contains(text(),'Gestão de Serviço')]")))
+
+# Acessando o dropdown menu "Painel de Ordens de Serviço"
+painel_ordens_servicos = wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(),'Painel de Ordens de Serviço')]")))
+painel_ordens_servicos.click()
+
+# Atraso para carregamento
+wait.until(EC.presence_of_element_located((By.ID, "detachedInspectionsTab")))
+
+# Acessando o menu "Inspeções sem OS"
+inspecoes_sem_os = wait.until(EC.element_to_be_clickable((By.ID, "detachedInspectionsTab")))
+inspecoes_sem_os.click()
+
+time.sleep(1)
+# -------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Aguardando a página carregar completamente após clicar no menu "Inspeções sem OS"
+wait.until(EC.presence_of_element_located((By.ID, "detachedInspectionsTab")))
+
+# Digitar nome do inspetor desejado
+nome_inspetor = input("Digite o nome do inspetor: ")
+
+# Clicar no campo o Nome do Inspetor
+driver.find_element(By.XPATH, "//div[@id='detachedInspectionsTable-filterDiv']/div[9]/span/span/span")
+
+time.sleep(1)
+
+inspetor_dropdown = wait.until(EC.element_to_be_clickable((By.XPATH, "//div[@id='detachedInspectionsTable-filterDiv']/div[9]/span/span/span")))
+inspetor_dropdown.click()
+
+time.sleep(2)
+
+# Preencher com o nome do inspetor digitado
+campo_inspetor = wait.until(EC.presence_of_element_located((By.XPATH, "//input[@type='search']")))
+campo_inspetor.send_keys(nome_inspetor)
+time.sleep(3)
+campo_inspetor.send_keys(Keys.RETURN)
+
+# Set data no campo Período
+data_atual = datetime.now()
+data_semana_atras = data_atual - timedelta(days=7)
+
+# Converter as datas para o formato desejado (por exemplo, 'dd/mm/aaaa')
+data_atual_formatada = data_atual.strftime('%d/%m/%Y')
+data_semana_atras_formatada = data_semana_atras.strftime('%d/%m/%Y')
+
+# Preencher campo Até
+setdata = wait.until(EC.presence_of_element_located((By.XPATH, "//input[@id='dataCriacaoFim']")))
+setdata.send_keys(data_atual_formatada)
+
+# Preencher campo De
+setdata_atras = wait.until(EC.presence_of_element_located((By.XPATH, "//input[@id='dataCriacaoInicio']")))
+setdata_atras.send_keys(data_semana_atras_formatada)
+
+# Clicar no botão Buscar
+botao_procura = wait.until(EC.element_to_be_clickable((By.XPATH, "(//button[@type='button'])[17]")))
+botao_procura.click()
+
+# -------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+# Aguarda até que a tecla "esc" seja pressionada antes de encerrar o driver
+keyboard.wait('esc')
+
+# Fechar o navegador
+#driver.quit()
