@@ -1,31 +1,50 @@
+from hmac import new
 import os
 import getpass
 import keyboard
 import time
+import pyautogui
 from datetime import datetime, timedelta
 from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import NoSuchElementException
 
 # Configurações do WebDriver
-options = webdriver.EdgeOptions()
-edge_driver_path = 'C:\webdriver\msedgedriver.exe'
+options = webdriver.FirefoxOptions()
+options.add_argument("--start-maximized")
+download_dir =  "C:/Users/3701097/Sotreq/Marcus Barbosa - Projeto Inspetor/Relatórios 2024"
+options.set_preference("browser.download.dir", download_dir)
+options.set_preference("browser.download.folderList", 2)
+options.set_preference("browser.helperApps.neverAsk.saveToDisk", "application/pdf") 
+options.set_preference("pdfjs.disabled", True)
+options.set_preference("browser.download.userDownloadDir", True)
+options.set_preference("browser.download.manager.showWhenStarting", False)
+options.set_preference("browser.helperApps.showProgressDialog", False)
 
-# Solicitação das credenciais do usuário
-username = input("Digite sua matrícula: ")
-password = getpass.getpass("Digite sua senha, a mesma utilizada no Windows: ")
+firefox_driver_path = 'C:\webdriver\geckodriver.exe'
 
 # Inicialização do WebDriver
-driver = webdriver.Edge(options=options)
+driver = webdriver.Firefox(options=options)
 
-# Definindo um tempo máximo de espera de 60 segundos
-wait = WebDriverWait(driver, 60)
+# Definindo um tempo máximo de espera de 10 segundos
+wait = WebDriverWait(driver, 10)
+wait.until(EC.visibility_of_element_located((By.TAG_NAME, "body")))
 
 # URL do site
 url = 'http://sotreqlnkinterno.sotreq.com.br/'
 driver.get(url)
+
+
+
+# Solicitação das credenciais do usuário
+username = input("Digite sua matrícula: ")
+password = getpass.getpass("Digite sua senha, a mesma utilizada no Windows: ")
 
 # Preenchendo o campo de matrícula
 username_field = wait.until(EC.presence_of_element_located((By.ID, "username")))
@@ -39,11 +58,9 @@ password_field.send_keys(password)
 password_field.send_keys(Keys.RETURN)
 
 # Acessando o menu "Gestão de Serviço"
-gestao_servico_menu = wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(),'Gestão de Serviço')]")))
+gestao_servico_menu = wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(),'Gestão de Campo')]")))
 gestao_servico_menu.click()
 
-# Aguardando a página carregar completamente após clicar no menu
-wait.until(EC.presence_of_element_located((By.XPATH, "//a[contains(text(),'Gestão de Serviço')]")))
 
 # Acessando o dropdown menu "Painel de Ordens de Serviço"
 painel_ordens_servicos = wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(text(),'Painel de Ordens de Serviço')]")))
@@ -83,7 +100,7 @@ campo_inspetor.send_keys(Keys.RETURN)
 
 # Set data no campo Período
 data_atual = datetime.now()
-data_semana_atras = data_atual - timedelta(days=7)
+data_semana_atras = data_atual - timedelta(days=14)
 
 # Converter as datas para o formato desejado (por exemplo, 'dd/mm/aaaa')
 data_atual_formatada = data_atual.strftime('%d/%m/%Y')
@@ -101,12 +118,54 @@ setdata_atras.send_keys(data_semana_atras_formatada)
 botao_procura = wait.until(EC.element_to_be_clickable((By.XPATH, "(//button[@type='button'])[17]")))
 botao_procura.click()
 
+time.sleep(5)
+
+# Rolagem vertical
+last_height = driver.execute_script("return document.body.scrollHeight")
+while True:
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    new_height = driver.execute_script("return document.body.scrollHeight")
+    if new_height == last_height:
+        break
+    last_height = new_height
+    time.sleep(5)
+  
 # -------------------------------------------------------------------------------------------------------------------------------------------------
 
+def baixar_arquivos(driver, sequencia_de_css_seletores):
+    for i, css_selector in enumerate(sequencia_de_css_seletores, start=1):
+        # Clica no elemento
+        elemento = WebDriverWait(driver, 2).until(EC.element_to_be_clickable((By.CSS_SELECTOR, css_selector)))
+        elemento.click()
+        print(f"Baixando arquivo {i} da sequência...")
+        time.sleep(65)
+        # Verifica se atingiu o décimo elemento da sequência
+        if i == 10:
+            try:
+                # Verifica se há uma próxima página
+                n = 2
+                proxima_pagina = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, f"//a[contains(text(),'{n}')]")))
+                proxima_pagina.click()
+                time.sleep(45)
+                print("Indo para próxima página...")
+                n += 1
+            except TimeoutException:
+                print("Não há próxima página para download. Automação finalizada.")
+                break
 
 
-# Aguarda até que a tecla "esc" seja pressionada antes de encerrar o driver
-keyboard.wait('esc')
+sequencia_de_css_seletores = [
+    f"tr:nth-child({n}) .ion-clipboard" for n in range(1, 11)
+]
+
+# Chama a função para baixar os arquivos em sequência com paginação
+while True:
+        baixar_arquivos(driver, sequencia_de_css_seletores)
+
+        if False:
+            print("Download concluido, se necessário realizar nova execução")
+            break
+time.sleep(30)
 
 # Fechar o navegador
-#driver.quit()
+driver.quit()
