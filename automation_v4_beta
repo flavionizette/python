@@ -16,14 +16,19 @@ from selenium.common.exceptions import TimeoutException
 from selenium.common.exceptions import NoSuchElementException
 
 # Configurações do WebDriver
-options = webdriver.FirefoxOptions()
+options = Options()
+
+# Maximizar a janela do navegador ao iniciar
 options.add_argument("--start-maximized")
-download_dir =  "C:/Users/3701097/Sotreq/Marcus Barbosa - Projeto Inspetor/Relatórios 2024"
+
+# Diretório de download
+download_dir = "C:/Users/3701097/Sotreq/Marcus Barbosa - Projeto Inspetor/Relatórios 2024"
+
+# Configuração das preferências do navegador para o diretório de download
 options.set_preference("browser.download.dir", download_dir)
 options.set_preference("browser.download.folderList", 2)
 options.set_preference("browser.helperApps.neverAsk.saveToDisk", "application/pdf") 
 options.set_preference("pdfjs.disabled", True)
-options.set_preference("browser.download.userDownloadDir", True)
 options.set_preference("browser.download.manager.showWhenStarting", False)
 options.set_preference("browser.helperApps.showProgressDialog", False)
 
